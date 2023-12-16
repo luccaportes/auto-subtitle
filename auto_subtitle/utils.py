@@ -1,5 +1,23 @@
 import os
-from typing import Iterator, TextIO
+from typing import Iterator
+import requests
+import json
+
+def translate(question, source_lang, target_lang):
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "q": question,
+        "source": source_lang,
+        "target": target_lang,
+        "format": "text",
+        "api_key": ""
+    }
+
+    response = requests.post("http://localhost:5000/translate", headers=headers, data=json.dumps(data))
+    return response.json()["translatedText"]
 
 
 def str2bool(string):
@@ -30,13 +48,15 @@ def format_timestamp(seconds: float, always_include_hours: bool = False):
     return f"{hours_marker}{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
 
-def write_srt(transcript: Iterator[dict], file: TextIO):
+def write_srt(transcript: Iterator[dict], file):
     for i, segment in enumerate(transcript, start=1):
+        txt = segment['text'].strip().replace('-->', '->')
+        txt = translate(txt, "en", "pt")
         print(
             f"{i}\n"
             f"{format_timestamp(segment['start'], always_include_hours=True)} --> "
             f"{format_timestamp(segment['end'], always_include_hours=True)}\n"
-            f"{segment['text'].strip().replace('-->', '->')}\n",
+            f"{txt}\n",
             file=file,
             flush=True,
         )
