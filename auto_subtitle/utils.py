@@ -16,7 +16,9 @@ def translate(question, source_lang, target_lang):
         "api_key": ""
     }
 
-    response = requests.post("http://localhost:5000/translate", headers=headers, data=json.dumps(data))
+    lt_host = os.getenv("LIBRETRANSLATE_HOST")
+
+    response = requests.post(f"{lt_host}/translate", headers=headers, data=json.dumps(data))
     return response.json()["translatedText"]
 
 
